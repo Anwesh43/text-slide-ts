@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, CSSProperties} from 'react'
 
 const colors : Array<string> = [
     "#f44336",
@@ -66,4 +66,40 @@ export const useTextSlideScale = (started : boolean, reset : Function, n : numbe
             }, delay)
         }
     }, [started, animated])
+    return {
+        textSlideScale : scale, 
+    }
+}
+
+export const useStyle = (w : number, h : number, s1 : number, s2 : number, i : number) => {
+    const lineWidth = `${w * s1}px`
+    const parentX = `${-(i + 1) * s2}px`
+    const position = 'absolute'
+    return {
+        progressStyle() : CSSProperties {
+            return {
+                width : lineWidth, 
+                height : `${h / 40}px`,
+                position,
+            }
+        },
+        textSlideParentStyle(): CSSProperties {
+            return {
+                position,
+                left: parentX
+            }
+        },
+        textSlideStyle(i : number): CSSProperties {
+            return {
+                width: lineWidth, 
+                height : `${h}px`,
+                background: colors[i % colors.length],
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position,
+                left: `${i * w}px`
+            }
+        }
+    }
 }
