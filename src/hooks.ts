@@ -1,8 +1,15 @@
 import {useState, useEffect} from 'react'
 
+const colors : Array<string> = [
+    "#f44336",
+    "#9C27B0",
+    "#6200EA",
+    "#00C853",
+    "#795548"
+]
 const scGap : number = 0.02 
 const delay : number = 20
-const useAnimatedScale = () => {
+export const useTimerScale = () => {
     const [scale, setScale] : [number, Function] = useState(0)
     const [animated, setAnimated] : [boolean, Function] = useState(false)
     const [start, setStart] : [boolean, Function] = useState(false)
@@ -23,10 +30,40 @@ const useAnimatedScale = () => {
         }
     }, [start, animated])
     return {
-        scale, 
+        timerScale : scale, 
         start,
-        toggleStart() {
+        reset() {
             setStart(false)
         }
     }
+}
+
+export const useTextSlideScale = (started : boolean, reset : Function, n : number) => {
+    const [scale, setScale] = useState(0)
+    const [animated, setAnimated] = useState(false)
+    const [i, setI] = useState(0)
+    const [dir, setDir] = useState(1)
+    useEffect(() => {
+        if (started && !animated) {
+            setAnimated(true)
+            const interval = setInterval(() => {
+                setScale((prev : number) => {
+                    if ((scale > 1 && dir == 1) || (scale < 0 && dir == -1)) {
+                        setI((prevI : number) => {
+                            if (prevI + dir == n - 1) {
+                                setDir(-1)  
+                            } 
+                            if (prevI + dir == 0) {
+                                setDir(1)
+                            }
+                            return prevI + dir 
+                        })
+                        clearInterval(interval)
+                        return (i == n - 2 && dir == 1) || (i == 1 && dir == -1) ?  (1 + dir) / 2 : (1 - dir) / 2  
+                    }
+                    return prev + scGap * dir  
+                })
+            }, delay)
+        }
+    }, [started, animated])
 }
