@@ -57,11 +57,14 @@ export const useTextSlideScale = (started : boolean, reset : Function, n : numbe
                 setScale((prev : number) => {
                     if ((prev > 1 && dir == 1) || (prev < 0 && dir == -1)) {
                         console.log("coming here")
+                        let currDir = dir 
                         if (i + dir == n - 1) {
                             setDir(-1)
+                            currDir *= -1
                         }
                         if (i + dir == 0) {
                             setDir(1)
+                            currDir *= -1
                         }
                         setI(i + dir)
                         reset()
@@ -116,7 +119,9 @@ export const useStyle = (w : number, h : number, s1 : number, s2 : number, i : n
                 justifyContent: 'center',
                 alignItems: 'center',
                 position,
-                left: `${i * w}px`
+                left: `${i * w}px`,
+                color : 'white',
+                fontSize : `${Math.min(w, h) / 20}px`
             }
         }
     }
