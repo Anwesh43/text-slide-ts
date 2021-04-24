@@ -7,15 +7,14 @@ const colors : Array<string> = [
     "#00C853",
     "#795548"
 ]
-const scGap : number = 0.02 
+const scGap : number = 0.01
 const delay : number = 20
 export const useTimerScale = () => {
     const [scale, setScale] : [number, Function] = useState(0)
     const [animated, setAnimated] : [boolean, Function] = useState(false)
     const [start, setStart] : [boolean, Function] = useState(false)
-    useEffect(() => {
-        if (!animated && !start) {
-            setAnimated(true)
+    const startAnim = () => {
+        setAnimated(true)
             const interval = setInterval(() => {
                 setScale((prev : number) => {
                     if (prev > 1) {
@@ -24,16 +23,22 @@ export const useTimerScale = () => {
                         clearInterval(interval) 
                         return 0
                     }
-                    return prev + 0.02 
+                    return prev + scGap 
                 })
             }, 20)
+    }
+    useEffect(() => {
+        if (!animated && !start) {
+            startAnim()
         }
     }, [start, animated])
     return {
         timerScale : scale, 
         start,
         reset() {
+            //console.log("coming here+++")
             setStart(false)
+            //startAnim()
         }
     }
 }
@@ -43,22 +48,26 @@ export const useTextSlideScale = (started : boolean, reset : Function, n : numbe
     const [animated, setAnimated] = useState(false)
     const [i, setI] = useState(0)
     const [dir, setDir] = useState(1)
+    console.log("DIR_UPDATE", i)
     useEffect(() => {
         if (started && !animated) {
+            console.log("I", i, "DIR", dir, "SCALE", scale)
             setAnimated(true)
             const interval = setInterval(() => {
                 setScale((prev : number) => {
-                    if ((scale > 1 && dir == 1) || (scale < 0 && dir == -1)) {
-                        setI((prevI : number) => {
-                            if (prevI + dir == n - 1) {
-                                setDir(-1)  
-                            } 
-                            if (prevI + dir == 0) {
-                                setDir(1)
-                            }
-                            return prevI + dir 
-                        })
+                    if ((prev > 1 && dir == 1) || (prev < 0 && dir == -1)) {
+                        console.log("coming here")
+                        if (i + dir == n - 1) {
+                            setDir(-1)
+                        }
+                        if (i + dir == 0) {
+                            setDir(1)
+                        }
+                        setI(i + dir)
+                        reset()
+                        setAnimated(false)
                         clearInterval(interval)
+                        
                         return (i == n - 2 && dir == 1) || (i == 1 && dir == -1) ?  (1 + dir) / 2 : (1 - dir) / 2  
                     }
                     return prev + scGap * dir  
@@ -68,30 +77,39 @@ export const useTextSlideScale = (started : boolean, reset : Function, n : numbe
     }, [started, animated])
     return {
         textSlideScale : scale, 
+        i
     }
 }
 
 export const useStyle = (w : number, h : number, s1 : number, s2 : number, i : number) => {
     const lineWidth = `${w * s1}px`
-    const parentX = `${-(i + 1) * s2}px`
+    const a : number = -i *  w  - w * s2
+    const parentX = `${a}px`
     const position = 'absolute'
     return {
         progressStyle() : CSSProperties {
             return {
                 width : lineWidth, 
-                height : `${h / 40}px`,
+                height : `${20}px`,
                 position,
+                left: '0px',
+                top: '0px',
+                background: 'green',
+                zIndex: 100
             }
         },
         textSlideParentStyle(): CSSProperties {
             return {
                 position,
-                left: parentX
+                left: parentX,
+                width: `${w - a}px`, 
+                height: `${h}px`,
+                overflow: 'hidden'
             }
         },
         textSlideStyle(i : number): CSSProperties {
             return {
-                width: lineWidth, 
+                width: `${w}px`, 
                 height : `${h}px`,
                 background: colors[i % colors.length],
                 display: 'flex',
@@ -104,7 +122,7 @@ export const useStyle = (w : number, h : number, s1 : number, s2 : number, i : n
     }
 }
 
-const useDimension = () => {
+export const useDimension = () => {
     const [w, setW] = useState(window.innerWidth)
     const [h, setH] = useState(window.innerHeight)
     useEffect(() => {
@@ -114,7 +132,7 @@ const useDimension = () => {
         }
         return () => {
             window.onresize = () => {
-                
+
             }
         }
     })
